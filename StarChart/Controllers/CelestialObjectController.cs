@@ -63,6 +63,67 @@ namespace StarChart.Controllers
             return Ok(celestials);
         }
 
+        [HttpPost(Name = "Create")]
+        public IActionResult Create([FromBody]CelestialObject celestialToCreate)
+        {
+            _context.CelestialObjects.Add(celestialToCreate);
+            _context.SaveChanges();
+
+            return CreatedAtRoute("GetById", new { id = celestialToCreate.Id }, celestialToCreate);
+        }
+
+        [HttpPut("{id}", Name = "Update")]
+        public IActionResult Update(int id, CelestialObject newCelestial)
+        {
+            var celestialToUpdate = _context.CelestialObjects.Find(id);
+
+            if (celestialToUpdate is null)
+            {
+                return NotFound();
+            }
+
+            celestialToUpdate.Name = newCelestial.Name;
+            celestialToUpdate.OrbitalPeriod = newCelestial.OrbitalPeriod;
+            celestialToUpdate.OrbitedObjectId = newCelestial.OrbitedObjectId;
+            _context.CelestialObjects.Update(celestialToUpdate);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/{name}")]
+        public IActionResult RenameObject(int id, string name)
+        {
+            var celestialToUpdate = _context.CelestialObjects.Find(id);
+
+            if (celestialToUpdate is null)
+            {
+                return NotFound();
+            }
+
+            celestialToUpdate.Name = name;
+            _context.CelestialObjects.Update(celestialToUpdate);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}", Name = "Delete")]
+        public IActionResult Delete(int id)
+        {
+            var celestialsToDelete = _context.CelestialObjects.Where(co => co.Id == id || co.OrbitedObjectId == id);
+
+            if (celestialsToDelete is null || !celestialsToDelete.Any())
+            {
+                return NotFound();
+            }
+
+            _context.CelestialObjects.RemoveRange(celestialsToDelete);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
         private void SetSatellites(List<CelestialObject> celestials)
         {
             foreach (var celestial in celestials)
